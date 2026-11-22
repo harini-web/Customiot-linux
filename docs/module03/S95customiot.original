@@ -1,0 +1,19 @@
+#!/bin/sh
+# The service is only enabled once the MQTT module is built.
+case "$1" in
+  start)
+    if [ -x /usr/bin/sensor-gateway ] && [ -x /usr/bin/mosquitto_pub ]; then
+      echo 'Starting CustomIoT telemetry...'
+      /usr/local/bin/telemetry-publish.sh >/var/log/customiot-telemetry.log 2>&1 &
+      echo $! >/var/run/customiot-telemetry.pid
+    fi
+    ;;
+  stop)
+    if [ -f /var/run/customiot-telemetry.pid ]; then
+      kill "$(cat /var/run/customiot-telemetry.pid)" 2>/dev/null || :
+      rm -f /var/run/customiot-telemetry.pid
+    fi
+    ;;
+  restart) "$0" stop; "$0" start ;;
+  *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac

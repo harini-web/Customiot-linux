@@ -1,0 +1,44 @@
+#!/bin/sh
+
+echo
+echo "========================================"
+echo "           CustomIoT Linux"
+echo "========================================"
+
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+fi
+
+echo "OS          : ${PRETTY_NAME:-Unknown}"
+echo "Hostname    : $(hostname)"
+echo "Kernel      : $(uname -r)"
+echo "Architecture: $(uname -m)"
+
+echo
+echo "----------- Memory ---------------------"
+
+free -m
+
+echo
+echo "----------- Uptime ---------------------"
+
+uptime
+
+echo
+echo "----------- Network --------------------"
+
+ip -br addr 2>/dev/null || ip addr
+
+echo
+echo "----------- Services -------------------"
+
+/etc/init.d/S90customiot-system status
+/etc/init.d/S95customiot status
+
+echo
+echo "----------- Storage --------------------"
+
+df -h
+
+echo
+echo "========================================"

@@ -1,0 +1,56 @@
+{
+  "timestamp_utc": "2026-11-21T03:44:56.629352+00:00",
+  "baseline_buildroot": {
+    "output": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline",
+    "rootfs": {
+      "path": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/rootfs.ext2",
+      "virtual_bytes": 62914560,
+      "host_allocated_bytes": 10260480,
+      "sha256": "e51c8286067414c8b5fd8aa4fd81eac4f159a5f96619266c3dca5ae3de584a9b",
+      "filesystem_bytes": 62914560,
+      "filesystem_used_bytes": 11146240,
+      "filesystem_free_bytes": 51768320
+    },
+    "kernel": {
+      "path": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/bzImage",
+      "virtual_bytes": 6644736,
+      "host_allocated_bytes": 6647808,
+      "sha256": "b3290882bd3a8b3ecda229662e0718c942d2ac739caeb8344d309d6509d0c5da"
+    },
+    "package_manifest": {
+      "value": null,
+      "source": "Run make legal-info; manifest.csv unavailable"
+    },
+    "rootfs_gzip_bytes": 2913436
+  },
+  "custom": {
+    "output": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output",
+    "rootfs": {
+      "path": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/rootfs.ext2",
+      "virtual_bytes": 134217728,
+      "host_allocated_bytes": 20496384,
+      "sha256": "ac2325b90a10070b794ac4a8afe1db580a7469807edcc01c15d5ed2b92447df6",
+      "filesystem_bytes": 134217728,
+      "filesystem_used_bytes": 29987840,
+      "filesystem_free_bytes": 104229888
+    },
+    "kernel": {
+      "path": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/bzImage",
+      "virtual_bytes": 6550528,
+      "host_allocated_bytes": 6553600,
+      "sha256": "cd73c45df35e94786f472f86b66d20eab7565fec66bd1daca97f5f35a936c39e"
+    },
+    "package_manifest": {
+      "value": 9,
+      "source": "/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/legal-info/manifest.csv",
+      "note": "Manifest package entries; verify manifest format manually"
+    },
+    "rootfs_gzip_bytes": 6645115
+  },
+  "stock": null,
+  "comparison_rules": {
+    "image": "same filesystem payload and method; not A/B disk capacity",
+    "baseline": "Buildroot baseline, not stock distro",
+    "guest": "same QEMU CPU/RAM/IO and boot-ready definition"
+  }
+}

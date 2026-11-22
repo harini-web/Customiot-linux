@@ -1,0 +1,4 @@
+CustomIoT Linux Factory State
+Version: 0.6
+Storage: OverlayFS
+Base: Read-only

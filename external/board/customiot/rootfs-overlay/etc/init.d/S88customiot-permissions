@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# CustomIoT Runtime Permissions
+# Module 06
+
+configure_permissions() {
+    echo "Configuring CustomIoT permissions..."
+
+    if [ ! -c /dev/ttyS1 ]; then
+        echo "WARNING: /dev/ttyS1 not available"
+    else
+        chown root:customiot /dev/ttyS1
+        chmod 0660 /dev/ttyS1
+    fi
+
+    mkdir -p /run/customiot
+    mkdir -p /var/log
+    mkdir -p /var/lib/customiot
+
+    # Application runtime directory
+    chown customiot:customiot /run/customiot
+    chmod 0750 /run/customiot
+
+    # Application state
+    chown customiot:customiot /var/lib/customiot
+    chmod 0750 /var/lib/customiot
+
+    # Dedicated application log
+    touch /var/log/customiot-gateway.log
+    chown customiot:customiot \
+        /var/log/customiot-gateway.log
+
+    chmod 0640 \
+        /var/log/customiot-gateway.log
+
+    echo "CustomIoT permissions configured"
+}
+
+case "$1" in
+    start|restart)
+        configure_permissions
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac

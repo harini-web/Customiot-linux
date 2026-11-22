@@ -1,0 +1,23 @@
+CustomIoT Linux - Kernel Benchmark
+=================================
+Fri Nov 20 10:33:34 AM UTC 2026
+
+[baseline]
+Kernel bytes:
+6644736
+b3290882bd3a8b3ecda229662e0718c942d2ac739caeb8344d309d6509d0c5da  /home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/bzImage
+Rootfs nominal bytes:
+62914560
+Rootfs allocated bytes:
+10260480	/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/rootfs.ext2
+
+[custom]
+Kernel bytes:
+6476800
+5c930484cfedac9e52d60ff1011c6f16851c20adfec40319f96bf2fe1a4c944d  /home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/bzImage
+Rootfs nominal bytes:
+62914560
+Rootfs allocated bytes:
+11182080	/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/rootfs.ext2
+
+Kernel size change: 2.53%

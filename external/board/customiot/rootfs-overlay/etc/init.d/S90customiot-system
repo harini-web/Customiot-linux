@@ -1,0 +1,103 @@
+#!/bin/sh
+
+# CustomIoT Linux System Initialization
+# Module 03
+
+CONFIG="/etc/customiot/customiot.conf"
+PIDFILE="/run/customiot-system.pid"
+STATEFILE="/run/customiot-system.ready"
+
+load_config() {
+    if [ -f "$CONFIG" ]; then
+        . "$CONFIG"
+    fi
+}
+
+prepare_directories() {
+    mkdir -p /var/log
+    mkdir -p /tmp
+
+    chmod 1777 /tmp
+
+    if [ ! -d /run/customiot ]; then
+        echo "ERROR: Runtime directory missing"
+        return 1
+    fi
+
+    if ! awk \
+        '$2 == "/var/lib/customiot" && $3 == "overlay" {
+            found=1
+        } END { exit !found }' \
+        /proc/mounts; then
+        echo "ERROR: Application OverlayFS missing"
+        return 1
+    fi
+}
+start_service() {
+    if [ -f "$STATEFILE" ]; then
+        echo "CustomIoT system already initialized"
+        return 0
+    fi
+
+    echo "Starting CustomIoT system..."
+
+    load_config
+    prepare_directories
+
+    echo "$$" > "$PIDFILE"
+
+    {
+        echo "System: ${SYSTEM_NAME:-CustomIoT Linux}"
+        echo "Version: ${SYSTEM_VERSION:-0.3}"
+        echo "Gateway: ${GATEWAY_NAME:-customiot-gateway}"
+        echo "Sensor: ${SENSOR_MODE:-simulated}"
+        echo "Initialized: $(date)"
+    } > /var/log/customiot-system.log
+
+    touch "$STATEFILE"
+
+    rm -f "$PIDFILE"
+
+    echo "CustomIoT system initialized"
+}
+
+stop_service() {
+    echo "Stopping CustomIoT system..."
+
+    rm -f "$PIDFILE"
+    rm -f "$STATEFILE"
+
+    echo "CustomIoT system stopped"
+}
+
+status_service() {
+    if [ -f "$STATEFILE" ]; then
+        echo "CustomIoT system: initialized"
+        return 0
+    fi
+
+    echo "CustomIoT system: not initialized"
+    return 1
+}
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    restart)
+        stop_service
+        start_service
+        ;;
+    status)
+        status_service
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit $?

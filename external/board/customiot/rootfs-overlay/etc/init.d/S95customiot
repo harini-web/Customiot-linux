@@ -1,0 +1,132 @@
+#!/bin/sh
+
+# CustomIoT Secure Gateway Service
+# Module 06
+
+DAEMON="/usr/bin/gateway-supervisor"
+PIDFILE="/run/customiot-gateway.pid"
+LOGFILE="/var/log/customiot-gateway.log"
+
+CONFIG="/etc/customiot/customiot.conf"
+
+load_config() {
+    GATEWAY_ENABLED="no"
+
+    if [ -f "$CONFIG" ]; then
+        . "$CONFIG"
+    fi
+}
+
+is_running() {
+    if [ ! -f "$PIDFILE" ]; then
+        return 1
+    fi
+
+    PID="$(cat "$PIDFILE")"
+
+    case "$PID" in
+        ''|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    kill -0 "$PID" 2>/dev/null
+}
+
+start_service() {
+    load_config
+
+    if [ "$GATEWAY_ENABLED" != "yes" ]; then
+        echo "CustomIoT gateway disabled"
+        return 0
+    fi
+
+    if is_running; then
+        echo "CustomIoT gateway already running"
+        return 0
+    fi
+
+    rm -f "$PIDFILE"
+
+    if ! id customiot >/dev/null 2>&1; then
+        echo "ERROR: customiot user missing"
+        return 1
+    fi
+
+    if [ ! -x "$DAEMON" ]; then
+        echo "ERROR: gateway supervisor missing"
+        return 1
+    fi
+
+    echo "Starting CustomIoT gateway..."
+
+    start-stop-daemon \
+        -S \
+        -b \
+        -m \
+        -p "$PIDFILE" \
+        -c customiot:customiot \
+        -x "$DAEMON" \
+        >> "$LOGFILE" 2>&1
+}
+
+stop_service() {
+    echo "Stopping CustomIoT gateway..."
+
+    if is_running; then
+        PID="$(cat "$PIDFILE")"
+
+        kill -TERM "$PID"
+
+        i=0
+
+        while [ "$i" -lt 5 ]; do
+            if ! kill -0 "$PID" 2>/dev/null; then
+                break
+            fi
+
+            sleep 1
+            i=$((i + 1))
+        done
+
+        if kill -0 "$PID" 2>/dev/null; then
+            echo "WARNING: Gateway did not stop cleanly"
+            return 1
+        fi
+    fi
+
+    rm -f "$PIDFILE"
+
+    echo "CustomIoT gateway stopped"
+}
+
+status_service() {
+    if is_running; then
+        PID="$(cat "$PIDFILE")"
+
+        echo "CustomIoT gateway running (PID $PID)"
+        return 0
+    fi
+
+    echo "CustomIoT gateway not running"
+    return 1
+}
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    restart)
+        stop_service && start_service
+        ;;
+    status)
+        status_service
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

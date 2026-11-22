@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+STATE=/mnt/customiot-data/update
+[ "$(id -u)" = 0 ] || { echo 'Root required' >&2; exit 1; }
+[ -f "$STATE/pending" ] || { echo 'No pending update' >&2; exit 1; }
+get() { sed -n "s/^$1=//p" "$STATE/pending"; }
+SLOT="$(get slot)"; SEQ="$(get sequence)"; VERSION="$(get version)"
+case "$(cat /proc/cmdline)" in *customiot.slot=A*) RUNNING=A;; *customiot.slot=B*) RUNNING=B;; *) echo 'No trusted slot selection' >&2; exit 1;; esac
+[ "$SLOT" = "$RUNNING" ] || { echo "Refusing confirmation: running $RUNNING, pending $SLOT" >&2; exit 1; }
+[ -f /run/customiot-system.ready ] || { echo 'System health marker missing' >&2; exit 1; }
+/etc/init.d/S95customiot status >/dev/null || { echo 'Gateway not running' >&2; exit 1; }
+printf '%s\n' "$SEQ" > "$STATE/current-sequence"
+printf 'slot=%s version=%s sequence=%s\n' "$SLOT" "$VERSION" "$SEQ" > "$STATE/last-confirmed"
+rm -f "$STATE/pending"
+sync
+echo "Confirmed slot $SLOT, version $VERSION, sequence $SEQ"

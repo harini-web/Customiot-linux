@@ -1,0 +1,39 @@
+CUSTOMIOT RELEASE AUDIT
+2026-11-21T03:49:20+00:00
+
+[Build files]
+[OK] scripts/setup.sh
+[OK] scripts/configure.sh
+[OK] scripts/build.sh
+[OK] external/configs/customiot_qemu_defconfig
+[OK] external/board/customiot/linux.config
+[OK] output/images/bzImage
+[OK] output/images/rootfs.ext2
+[OK] benchmarks/module09/ALL_BENCHMARKS.txt
+
+[Overlay tests]
+[SYNTAX OK] external/board/customiot/rootfs-overlay/usr/local/bin/test-module06
+[SYNTAX OK] external/board/customiot/rootfs-overlay/usr/local/bin/customiot-benchmark-all
+
+[Buildroot settings]
+BR2_INIT_BUSYBOX=y
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_CUSTOMIOT_PATH)/board/customiot/rootfs-overlay"
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_4=y
+BR2_TARGET_ROOTFS_EXT2_GEN=4
+BR2_TARGET_ROOTFS_EXT2_LABEL="rootfs"
+BR2_TARGET_ROOTFS_EXT2_SIZE="128M"
+BR2_TARGET_ROOTFS_EXT2_INODES=0
+BR2_TARGET_ROOTFS_EXT2_INODE_SIZE=256
+BR2_TARGET_ROOTFS_EXT2_RESBLKS=5
+BR2_TARGET_ROOTFS_EXT2_MKFS_OPTIONS="-O ^64bit"
+BR2_TARGET_ROOTFS_EXT2_NONE=y
+BR2_TARGET_ROOTFS_EXT2_BLOCKS=0
+BR2_TARGET_ROOTFS_EXT2_EXTRA_INODES=0
+BR2_TARGET_ROOTFS_EXT2_EXTRA_BLOCKS=0
+
+[Image SHA256]
+cd73c45df35e94786f472f86b66d20eab7565fec66bd1daca97f5f35a936c39e  output/images/bzImage
+ac2325b90a10070b794ac4a8afe1db580a7469807edcc01c15d5ed2b92447df6  output/images/rootfs.ext2
+
+[Git changes]

@@ -1,0 +1,221 @@
+CUSTOMIOT LINUX — ALL BENCHMARKS AND MODULE 09 VALIDATION
+Captured UTC: 2026-11-21T03:45:11.353570+00:00
+Units: bytes unless otherwise noted. Unavailable measurements are NOT estimates.
+CONFIGURATION: 2 vCPU / 512 MiB RAM / VirtIO network in provided QEMU launcher.
+
+===== Buildroot baseline rootfs =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/rootfs.ext2
+image_file_bytes=62914560
+host_allocated_bytes=10260480
+sha256=e51c8286067414c8b5fd8aa4fd81eac4f159a5f96619266c3dca5ae3de584a9b
+ext_used_bytes=11146240
+ext_capacity_bytes=62914560
+gzip_level9_bytes=2913424
+
+===== CustomIoT rootfs build =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/rootfs.ext2
+image_file_bytes=134217728
+host_allocated_bytes=20496384
+sha256=ac2325b90a10070b794ac4a8afe1db580a7469807edcc01c15d5ed2b92447df6
+ext_used_bytes=29987840
+ext_capacity_bytes=134217728
+gzip_level9_bytes=6645103
+
+===== Kernel baseline =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/output-baseline/images/bzImage
+image_file_bytes=6644736
+host_allocated_bytes=6647808
+sha256=b3290882bd3a8b3ecda229662e0718c942d2ac739caeb8344d309d6509d0c5da
+ext_used_bytes=N/A (not ext filesystem or tune2fs unavailable)
+
+===== Kernel custom =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/output/images/bzImage
+image_file_bytes=6550528
+host_allocated_bytes=6553600
+sha256=cd73c45df35e94786f472f86b66d20eab7565fec66bd1daca97f5f35a936c39e
+ext_used_bytes=N/A (not ext filesystem or tune2fs unavailable)
+
+===== A/B slot A =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/module07-disks/root-a.img
+image_file_bytes=134217728
+host_allocated_bytes=16289792
+sha256=82ff83db6ff874b3f5f99f60dbe910743ffa49f94b24cb7a577c2d12ae53036c
+ext_used_bytes=29978624
+ext_capacity_bytes=134217728
+gzip_level9_bytes=6642620
+
+===== A/B slot B =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/module07-disks/root-b.img
+image_file_bytes=134217728
+host_allocated_bytes=134221824
+sha256=ac2325b90a10070b794ac4a8afe1db580a7469807edcc01c15d5ed2b92447df6
+ext_used_bytes=29987840
+ext_capacity_bytes=134217728
+gzip_level9_bytes=6645103
+
+===== Persistent state disk =====
+path=/home/harini/Downloads/customiot-linux-starter/customiot-linux/module07-disks/state.img
+image_file_bytes=134217728
+host_allocated_bytes=17285120
+sha256=e2e7d92825c07f33a8bdb73689f42b1c613565ff21fa057bd8e9f53f06c045c8
+ext_used_bytes=25485312
+ext_capacity_bytes=134217728
+
+===== Buildroot baseline package inventory =====
+N/A (run Buildroot make legal-info; ensure manifest.csv exists)
+===== CustomIoT package inventory =====
+9 entries in /home/harini/Downloads/customiot-linux-starter/customiot-linux/output/legal-info/manifest.csv (Buildroot legal manifest; not dpkg package count)
+STOCK REDUCTION: NOT MEASURED. Provide --stock-image with comparable stock ext filesystem.
+===== Guest measurements, service tests, MQTT =====
+CUSTOMIOT GUEST BENCHMARKS (MODULE 09)
+capture_utc=2026-11-21T03:43:26Z
+hostname=customiot
+kernel=6.18.7
+arch=x86_64
+PRETTY_NAME="CustomIoT Linux 0.9.0"
+VERSION_ID="0.9.0"
+boot_cmdline=rootwait root=/dev/vdb ro console=ttyS0 customiot.slot=B
+logical_cpus=2
+--- BOOT READINESS ---
+CUSTOMIOT_BOOT_READY uptime_s=2.08
+--- MEMORY ---
+MemTotal:         498200 kB
+MemFree:          475032 kB
+MemAvailable:     472360 kB
+Buffers:             604 kB
+Cached:             5148 kB
+SReclaimable:       1144 kB
+estimated_used_kib=25840
+--- STORAGE ---
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/root               117203     15416     92613  14% /
+overlay                 106420       240     97008   0% /var/lib/customiot
+/dev/root / ext4 ro,relatime 0 0
+/dev/vdc /mnt/customiot-data ext4 rw,nosuid,nodev,noatime 0 0
+overlay /var/lib/customiot overlay rw,relatime,lowerdir=/usr/share/customiot/state-base,upperdir=/mnt/customiot-data/overlay/upper,workdir=/mnt/customiot-data/overlay/work 0 0
+--- PROCESS RSS ---
+mosquitto pid=121 rss_kib=3804
+mosquitto_pub pid=164 rss_kib=2528
+--- CPU: PER PROCESS CLOCK TICKS (5 SECOND WINDOW) ---
+gateway-supervisor pid=159 ticks_before=0
+uart-sensor-reader pid=163 ticks_before=20
+mosquitto pid=121 ticks_before=146
+gateway-supervisor pid=159 ticks_after=0
+uart-sensor-reader pid=163 ticks_after=20
+mosquitto pid=121 ticks_after=147
+CPU interpretation: ticks are cumulative, compare before/after for matching PIDs; sample delay 5 s.
+--- SERVICES & DEVICES ---
+CustomIoT gateway running (PID 159)
+crw-rw----    1 root     customiot    4,  65 Nov 21 03:37 /dev/ttyS1
+--- MQTT BATCH THROUGHPUT: 3 REPEATS ---
+mqtt_run=1 messages=200
+sent=200 received=200 duration_seconds=0.120 delivery_percent=100.00 throughput_messages_per_s=1666.67
+mqtt_run=2 messages=200
+sent=200 received=200 duration_seconds=0.130 delivery_percent=100.00 throughput_messages_per_s=1538.46
+mqtt_run=3 messages=200
+sent=200 received=200 duration_seconds=0.140 delivery_percent=100.00 throughput_messages_per_s=1428.57
+--- REGRESSION TESTS ---
+test=test-module03
+==================================
+ CustomIoT Module 03 Tests
+==================================
+[PASS] OS identity
+[PASS] Hostname
+[PASS] System configuration
+[PASS] Init script exists
+[PASS] System initialized
+[PASS] Runtime directory
+[PASS] Application state directory
+[PASS] Initialization log
+[PASS] System utility
+[PASS] Gateway service
+
+Passed: 10
+Failed: 0
+Module 03 tests successful
+test=test-module04
+====================================
+ CustomIoT Module 04 Tests
+====================================
+[PASS] Sensor binary
+[PASS] Gateway supervisor
+[PASS] MQTT publisher
+[PASS] MQTT subscriber
+[PASS] MQTT configuration
+[PASS] Gateway configuration
+[PASS] Gateway service
+[PASS] Gateway running
+[PASS] Sensor JSON output
+
+Testing MQTT communication...
+[PASS] MQTT publish/subscribe
+
+Passed: 10
+Failed: 0
+Module 04 tests successful
+test=test-module05
+======================================
+ CustomIoT Linux - Module 05 Tests
+======================================
+[PASS] UART device exists
+[PASS] UART reader installed
+[PASS] Simulated sensor installed
+[PASS] Gateway supervisor installed
+[PASS] MQTT publisher installed
+[PASS] MQTT subscriber installed
+[PASS] Sensor mode configured
+[PASS] UART device configured
+[PASS] Gateway service running
+[PASS] MQTT broker running
+
+--------------------------------------
+Passed: 10
+Failed: 0
+--------------------------------------
+Module 05 component tests passed
+test=test-module06
+=======================================
+ CustomIoT Linux - Module 06 Tests
+=======================================
+[PASS] Root filesystem read-only
+[PASS] Root write protection
+[PASS] Application OverlayFS
+[PASS] Writable application state
+[PASS] Read-only lower layer
+[PASS] Dedicated service account
+[PASS] Restricted UART permissions
+[PASS] Gateway service running
+[PASS] Gateway running without root
+[PASS] Application configuration
+
+=======================================
+Passed: 10
+Failed: 0
+=======================================
+Module 06 security tests passed
+test=test-module07
+[PASS] Persistent ext4 mounted
+[PASS] OverlayFS mounted
+[PASS] Verified update utility installed
+[PASS] Public verification key installed
+[PASS] System root read-only
+[PASS] Can write persistent state
+[PASS] UART gateway still running
+Failures: 0
+--- BENCHMARK NOTES ---
+MQTT test measures local loopback batch delivery and throughput, NOT per-message latency.
+Boot time is kernel-start to S99 init-script marker, NOT power-on to service readiness.
+UART end-to-end sensor feed and update tamper rejection require separate integration tests.
+
+===== Stock guest metrics (optional) =====
+NOT PROVIDED. Collect stock RAM, uptime, package count and MQTT workload under equivalent QEMU settings.
+
+METHODOLOGY / LIMITATIONS
+- Buildroot baseline is NOT a stock Debian/Ubuntu distribution.
+- A/B slot sizes and state-disk capacity are reported separately from the active OS footprint.
+- ext_used_bytes includes filesystem metadata; compare consistent image types.
+- Buildroot legal-info manifest is not equivalent to dpkg package count; label appropriately.
+- MQTT batch throughput and delivery are not per-message latency. Latency NOT MEASURED by this collector.
+- CPU clock ticks and RSS are observations; repeated idle/active CPU tests need same workloads.
+- Boot marker excludes QEMU firmware time and may precede actual end-to-end sensor readiness.
+- Root filesystem updates must be booted/validated separately on both slots.

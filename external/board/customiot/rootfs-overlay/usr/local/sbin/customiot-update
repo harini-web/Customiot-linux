@@ -1,0 +1,58 @@
+#!/bin/sh
+# Signed root filesystem updater (demo); kernel is separately loaded by QEMU.
+set -eu
+MEDIA=/mnt/update-media
+STATE=/mnt/customiot-data/update
+KEY=/etc/customiot/update-public.pem
+error() { echo "UPDATE REJECTED: $*" >&2; exit 1; }
+get() { sed -n "s/^$1=//p" "$MEDIA/manifest.txt"; }
+case "${1:-}" in apply) ;; *) echo 'Usage: customiot-update apply'; exit 2;; esac
+[ "$(id -u)" = 0 ] || error 'root required for writing inactive system disk'
+[ -f "$KEY" ] || error 'missing trusted public key'
+awk '$2=="/mnt/customiot-data" {ok=1} END {exit !ok}' /proc/mounts || error 'persistent state not mounted'
+mkdir -p "$MEDIA" "$STATE"
+if ! awk '$2=="/mnt/update-media" {ok=1} END {exit !ok}' /proc/mounts; then
+    mount -t ext4 -o ro,nosuid,nodev,noexec /dev/vdd "$MEDIA" || error 'cannot mount update media'
+fi
+for file in manifest.txt manifest.sig rootfs.img; do
+    [ -f "$MEDIA/$file" ] || error "missing $file"
+done
+openssl dgst -sha256 -verify "$KEY" -signature "$MEDIA/manifest.sig" "$MEDIA/manifest.txt" >/dev/null 2>&1 || error 'bad signature'
+[ "$(get format)" = 1 ] || error 'unsupported format'
+[ "$(get product)" = customiot ] || error 'wrong product'
+[ "$(get arch)" = x86_64 ] || error 'wrong architecture'
+VERSION="$(get version)"
+SEQ="$(get sequence)"
+SIZE="$(get size)"
+HASH="$(get sha256)"
+echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || error 'invalid version'
+echo "$SEQ" | grep -Eq '^[1-9][0-9]*$' || error 'invalid sequence'
+echo "$SIZE" | grep -Eq '^[1-9][0-9]*$' || error 'invalid size'
+echo "$HASH" | grep -Eq '^[a-f0-9]{64}$' || error 'invalid checksum'
+[ "$(wc -c < "$MEDIA/rootfs.img" | tr -d ' ')" = "$SIZE" ] || error 'size mismatch'
+[ "$(sha256sum "$MEDIA/rootfs.img" | cut -d' ' -f1)" = "$HASH" ] || error 'hash mismatch'
+CURRENT=0
+if [ -f "$STATE/current-sequence" ]; then CURRENT="$(cat "$STATE/current-sequence")"; fi
+echo "$CURRENT" | grep -Eq '^[0-9]+$' || error 'invalid committed sequence'
+[ "$SEQ" -gt "$CURRENT" ] || error 'downgrade or repeated sequence'
+# No second pending update before acceptance/cancellation.
+[ ! -e "$STATE/pending" ] || error 'existing pending update needs confirmation or cancellation'
+case "$(cat /proc/cmdline)" in
+    *root=/dev/vda*) INACTIVE=/dev/vdb; INACTIVE_SLOT=B ;;
+    *root=/dev/vdb*) INACTIVE=/dev/vda; INACTIVE_SLOT=A ;;
+    *) error 'unknown active root slot' ;;
+esac
+[ -b "$INACTIVE" ] || error 'inactive system device absent'
+BLOCK="${INACTIVE##*/}"
+[ -r "/sys/class/block/$BLOCK/size" ] || error 'cannot inspect inactive disk capacity'
+SECTORS="$(cat "/sys/class/block/$BLOCK/size")"
+CAPACITY=$((SECTORS * 512))
+[ "$SIZE" -le "$CAPACITY" ] || error 'image larger than inactive disk'
+echo "Verified signed OS rootfs $VERSION sequence $SEQ; writing inactive slot $INACTIVE_SLOT"
+dd if="$MEDIA/rootfs.img" of="$INACTIVE" bs=1M || error 'image write failed'
+sync
+# Pending metadata is recorded only after successful write.
+printf 'slot=%s\nversion=%s\nsequence=%s\n' "$INACTIVE_SLOT" "$VERSION" "$SEQ" > "$STATE/pending"
+sync
+echo "UPDATE STAGED: slot $INACTIVE_SLOT. Shut down QEMU; boot that slot manually to validate."
+echo "Kernel remains the separately supplied bzImage. No automatic rollback is implemented."

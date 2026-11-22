@@ -1,0 +1,28 @@
+#!/bin/sh
+# MQTT batch message throughput/delivery on guest loopback broker.
+# This is NOT per-message publish-to-consume latency.
+set -eu
+N=${1:-200}
+case "$N" in ''|*[!0-9]*) echo 'Usage: module08-mqtt-batch [positive-count]' >&2;exit 2;; esac
+[ "$N" -gt 0 ] && [ "$N" -le 10000 ] || { echo 'count must be 1..10000' >&2;exit 2; }
+TOPIC="customiot/benchmark/$$"
+RFILE="/tmp/mqtt-rec-$$"
+SFILE="/tmp/mqtt-sub-$$"
+cleanup(){ [ -n "${SUBPID:-}" ] && kill "$SUBPID" 2>/dev/null || :;rm -f "$RFILE" "$SFILE"; }
+trap cleanup EXIT INT TERM
+# Avoid leaving subscriber running indefinitely if fewer messages arrive.
+mosquitto_sub -h 127.0.0.1 -t "$TOPIC" -C "$N" -W 15 > "$RFILE" 2> "$SFILE" &
+SUBPID=$!
+sleep 1
+START=$(awk '{print $1}' /proc/uptime)
+awk -v n="$N" 'BEGIN { for (i=1;i<=n;i++) printf "measurement-%d\n",i }' |
+    mosquitto_pub -h 127.0.0.1 -t "$TOPIC" -q 1 -l
+wait "$SUBPID" || :
+SUBPID=''
+END=$(awk '{print $1}' /proc/uptime)
+COUNT=$(wc -l < "$RFILE")
+awk -v start="$START" -v end="$END" -v sent="$N" -v received="$COUNT" 'BEGIN {
+    sec=end-start;
+    printf "sent=%d received=%d duration_seconds=%.3f delivery_percent=%.2f throughput_messages_per_s=%.2f\n",sent,received,sec,100*received/sent,(sec>0?received/sec:0)
+    if(received!=sent) exit 1
+}'

@@ -1,0 +1,29 @@
+#!/bin/sh
+# Usage: module08-guest-metrics [run-label]. Run as root inside guest.
+set -eu
+LABEL=${1:-manual}
+OUT=/var/lib/customiot/benchmarks
+mkdir -p "$OUT"
+FILE="$OUT/guest-$LABEL.txt"
+{
+    echo "label=$LABEL"
+    echo "kernel=$(uname -r)"
+    echo "os=$(sed -n 's/^PRETTY_NAME=//p' /etc/os-release | head -1)"
+    echo "uptime_seconds=$(awk '{print $1}' /proc/uptime)"
+    sed -n '/^MemTotal:/p;/^MemFree:/p;/^MemAvailable:/p;/^Cached:/p;/^SReclaimable:/p' /proc/meminfo
+    echo '---mounts---'
+    grep -E ' / | /var/lib/customiot | /mnt/customiot-data ' /proc/mounts || :
+    echo '---process-rss-kb---'
+    for name in gateway-supervisor uart-sensor-reader mosquitto; do
+        for dir in /proc/[0-9]*; do
+            [ -r "$dir/comm" ] || continue
+            [ "$(cat "$dir/comm")" = "$name" ] || continue
+            awk -v process="$name" -v pid="${dir##*/}" '/^VmRSS:/{print process,pid,$2}' "$dir/status" || :
+        done
+    done
+    echo '---service---'
+    /etc/init.d/S95customiot status 2>&1 || :
+    echo '---boot-ready---'
+    cat /var/lib/customiot/boot-ready.txt 2>/dev/null || :
+} | tee "$FILE"
+echo "Saved $FILE"

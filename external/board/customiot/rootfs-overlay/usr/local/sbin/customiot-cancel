@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+[ "$(id -u)" = 0 ] || exit 1
+STATE=/mnt/customiot-data/update
+[ -e "$STATE/pending" ] || { echo 'No pending update'; exit 0; }
+rm -f "$STATE/pending"
+sync
+echo 'Pending selection cleared. Existing inactive image remains on disk.'

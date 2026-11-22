@@ -1,0 +1,9 @@
+#!/bin/sh
+# Boot readiness = after all earlier S-scripts were invoked, not BIOS/QEMU wall time.
+[ "${1:-start}" = start ] || exit 0
+UPTIME=$(awk '{print $1}' /proc/uptime)
+MARKER="CUSTOMIOT_BOOT_READY uptime_s=$UPTIME"
+printf '%s\n' "$MARKER" > /dev/console
+if [ -d /var/lib/customiot ] && [ -w /var/lib/customiot ]; then
+    printf '%s\n' "$MARKER" > /var/lib/customiot/boot-ready.txt
+fi

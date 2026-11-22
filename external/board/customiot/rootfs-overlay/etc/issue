@@ -1,0 +1,13 @@
+
+====================================================
+                 CustomIoT Linux
+                 Version 0.9.0
+
+            Secure IoT Gateway OS
+====================================================
+
+Architecture : x86_64
+Build System : Buildroot
+Init System  : BusyBox init
+Filesystem  : Read-only root + OverlayFS
+

@@ -1,0 +1,67 @@
+#!/bin/sh
+
+LOWER="/usr/share/customiot/state-base"
+BASE="/run/customiot-live-overlay"
+UPPER="$BASE/upper"
+WORK="$BASE/work"
+TARGET="/var/lib/customiot"
+
+is_mounted() {
+    awk -v target="$TARGET" '
+        $2 == target && $3 == "overlay" {
+            found = 1
+        }
+        END { exit !found }
+    ' /proc/mounts
+}
+
+start_storage() {
+    echo "Starting CustomIoT live storage..."
+
+    if is_mounted; then
+        echo "OverlayFS already mounted"
+        return 0
+    fi
+
+    mkdir -p "$BASE"
+    mkdir -p "$TARGET"
+    mkdir -p /var/log
+
+    mount -t tmpfs \
+        -o size=16m,mode=0755 \
+        tmpfs "$BASE" || return 1
+
+    mkdir -p "$UPPER" "$WORK"
+
+    mount -t overlay overlay \
+        -o "lowerdir=$LOWER,upperdir=$UPPER,workdir=$WORK" \
+        "$TARGET" || return 1
+
+    echo "CustomIoT live OverlayFS ready"
+}
+
+case "$1" in
+    start)
+        start_storage
+        ;;
+    stop)
+        umount "$TARGET" 2>/dev/null || :
+        umount "$BASE" 2>/dev/null || :
+        ;;
+    restart)
+        "$0" stop
+        start_storage
+        ;;
+    status)
+        if is_mounted; then
+            echo "CustomIoT live OverlayFS active"
+        else
+            echo "CustomIoT live OverlayFS inactive"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

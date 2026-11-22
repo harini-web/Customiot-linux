@@ -1,0 +1,4 @@
+config BR2_PACKAGE_SENSOR_GATEWAY
+    bool "sensor-gateway"
+    help
+      Small C sensor telemetry simulator used for gateway tests.
