@@ -1,4 +1,4 @@
-# CustomIoT Linux (academic assignment)
+# CustomIoT Linux
 
 Standalone minimal Linux gateway built with **Buildroot 2026.08.2**, with x86-64 QEMU as the first target. No NVIDIA/CUDA dependency in the required build.
 
